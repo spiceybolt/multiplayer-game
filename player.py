@@ -50,33 +50,29 @@ class Game():
 	def mainloop(self):	
 			
 		while True:
+			#getting input from user
 			self.handleInput()
 
+			#moving the player and confining within screen
 			self.playerrect.move_ip(self.velX, self.velY)
 			self.playerrect.clamp_ip(self.screenrect)
 
+			#sending the server player's position
 			print((self.playerrect.x, self.playerrect.y, self.c))
 			self.sock.send(pickle.dumps((self.playerrect.x, self.playerrect.y, self.c)))
 
+			#get all player positions from server
+			playerdata = pickle.loads(self.sock.recv(1024))
+
+			#clear screen, draw player and show screen
 			self.screen.fill((0,0,0))
+			for i in playerdata:
+				if not i[-1] == self.c:
+					pg.draw.rect(self.screen, self.colours[i[-1]], pg.Rect(i[0],i[1],20,20))
+
 			pg.draw.rect(self.screen, self.colours[self.c], self.playerrect)
 
 			pg.display.flip()
-		# x,y,xp,yp = 0,0,0,0
-		# sent = None
-		# while True:
-		# 	xp = int(input("x: "))
-		# 	yp = int(input("y: "))
-		# 	if xp == -1 or yp == -1:
-		# 		break
-		# 	x += xp
-		# 	y += yp
-		# 	sent = pickle.dumps((x,y,self.c))
-		# 	print(len(sent),": len of pickle object")
-		# 	self.sock.send(sent)
-		# 	print(self.sock.recv(1024))
-		# self.sock.send(b'')
-		# self.quit()
 
 	def quit(self):
 		print("Exiting")

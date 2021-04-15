@@ -20,7 +20,7 @@ def playerthread(client, addr, name:str):
 	colourlock.acquire()
 	# assigning colours to dudes in the order they joined(needs work later)
 	client.send(colours[count - 1].encode())
-
+	thiscolour = colours[count - 1]
 	countlock.release()
 	colourlock.release()
 	
@@ -37,11 +37,13 @@ def playerthread(client, addr, name:str):
 		else:
 			playerdata[playerdata.index(next(i for i in playerdata if pickleobj[-1] in i))] = pickle.loads(msg)
 		print(playerdata)
+		client.send(pickle.dumps(playerdata))
 		playerdatalock.release()
 		countlock.release()
 		
 		# client.send(b'got')
 	print("closed client")
+	playerdata.pop(playerdata.index(next(i for i in playerdata if thiscolour in i)))
 	
 	countlock.acquire()
 	count -= 1
