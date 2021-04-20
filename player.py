@@ -1,5 +1,6 @@
 import socket
 import pygame as pg
+from time import sleep
 import pickle
 import json
 
@@ -13,7 +14,6 @@ class Game():
 
 		self.sock.connect(address)
 		self.c = self.sock.recv(1024).decode()
-		print(self.c)
 
 		self.size = (800,600)
 		self.screen = pg.display.set_mode(self.size)
@@ -25,7 +25,11 @@ class Game():
 		self.colours = {'r':(255,0,0),'g':(0,255,0),'b':(0,0,255)}
 		self.velX = 0
 		self.velY = 0
-		self.speed = 2
+		self.pos_x = 0
+		self.pos_y = 0
+		self.speed = 40
+
+		self.clock = pg.time.Clock()
 
 
 	def handle_input(self):
@@ -51,13 +55,19 @@ class Game():
 
 
 	def mainloop(self):	
-			
 		while True:
 			#getting input from user
 			self.handle_input()
 
 			#moving the player and confining within screen
-			self.player_rect.move_ip(self.velX, self.velY)
+			dt = self.clock.tick()/1000.0
+
+			
+			self.pos_x += self.velX*dt
+			self.pos_y += self.velY*dt
+			self.player_rect.x = self.pos_x
+			self.player_rect.y = self.pos_y
+			
 			self.player_rect.clamp_ip(self.screen_rect)
 
 			#sending the server player's position
