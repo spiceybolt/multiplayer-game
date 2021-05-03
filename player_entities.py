@@ -1,8 +1,4 @@
-import socket
 import pygame as pg
-from time import sleep
-import pickle
-import json
 
 
 
@@ -22,6 +18,7 @@ class Client(pg.sprite.Sprite):
 		self.frame = 0
 
 		self.rect = pg.Rect(0, 0, self.images[0].get_width(), self.images[0].get_height())
+		print(self.images[0].get_width(), self.images[0].get_height())
 
 
 	def update(self, playerdata, dt):
@@ -75,7 +72,7 @@ class Player(pg.sprite.Sprite):
 		self.dir = [0,0]
 		self.pos_x = 0
 		self.pos_y = 0
-		self.speed = 800
+		self.speed = 400
 
 		self.facing = 0 #[0,3]
 		self.anim_frame = 1
@@ -98,11 +95,7 @@ class Player(pg.sprite.Sprite):
 			return
 		self.dir[1] = y
 
-
-	def update(self, dt:float):
-		self.pos_x += self.speed*self.dir[0]*dt
-		self.pos_y += self.speed*self.dir[1]*dt
-
+	def animate(self, dt:float):
 		if self.dir[0] == 1:
 			self.facing = 0
 		elif self.dir[0] == -1:
@@ -118,7 +111,36 @@ class Player(pg.sprite.Sprite):
 		else:
 			self.frame = self.facing
 
+	def collision_handle(self, walls:pg.sprite.Group, direction):
+		
+		if direction == 'x':
+			collision_list = pg.sprite.spritecollide(self, walls, False)
+			if collision_list:
+				if self.dir[0] == -1:
+					self.pos_x = collision_list[0].rect.right
+				elif self.dir[0] == 1:
+					self.pos_x = collision_list[0].rect.x - self.rect.w
+				self.dir[0] = 0
+				self.rect.x = self.pos_x
 
+		if direction == 'y':
+			collision_list = pg.sprite.spritecollide(self, walls, False)
+			if collision_list:
+				if self.dir[1] == -1:
+					self.pos_y = collision_list[0].rect.bottom
+				elif self.dir[1] == 1:
+					self.pos_y = collision_list[0].rect.y - self.rect.h
+				self.dir[1] = 0
+				self.rect.y = self.pos_y
+
+
+
+
+	def update(self, dt:float, walls):
+		self.pos_x += self.speed*self.dir[0]*dt
+		self.pos_y += self.speed*self.dir[1]*dt
+
+		self.animate(dt)	
 
 		if self.pos_x + self.rect.w > self.bounds[0]:
 			self.pos_x = self.bounds[0] - self.rect.w
@@ -129,9 +151,10 @@ class Player(pg.sprite.Sprite):
 		elif self.pos_y < 0:
 			self.pos_y = 0
 
-
 		self.rect.x = self.pos_x
+		self.collision_handle(walls, 'x')
 		self.rect.y = self.pos_y
+		self.collision_handle(walls, 'y')
 
 
 	def draw(self, surface):

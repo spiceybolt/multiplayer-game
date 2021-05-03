@@ -3,9 +3,12 @@ import pygame as pg
 from time import sleep
 import pickle
 import json
+
 import player_entities
+import tile_map
 
 pg.init()
+
 
 class Game():
 	def __init__(self, address):
@@ -23,13 +26,15 @@ class Game():
 
 		self.person_images = []
 		for i in range(6):
-			self.person_images.append(pg.image.load(f"res/player/{i}.png"))
+			self.person_images.append(pg.image.load(f"./res/player/sprite{i}.png"))
 
 		self.colours = {'r':(255,0,0),'g':(0,255,0),'b':(0,0,255)}
 
 		self.player = player_entities.Player(self.size, self.c, self.colours[self.c], self.person_images)
 		self.clients = pg.sprite.Group()
 		self.clock = pg.time.Clock()
+
+		self.level_map = tile_map.Map("res/levels/level1.txt")
 
 
 	def handle_input(self):
@@ -69,6 +74,19 @@ class Game():
 							print(i.color_name)
 						self.client_count += 1		
 
+	def draw(self):
+		#clearing the screen and drawing all entities
+		self.screen.fill((112,128,144))
+
+		self.level_map.draw(self.screen)
+
+		self.player.draw(self.screen)
+
+		for i in self.clients.sprites():
+			i.draw(self.screen)
+
+		pg.display.flip()
+	
 	def mainloop(self):	
 		while True:
 			#getting input from user
@@ -77,7 +95,7 @@ class Game():
 			dt = self.clock.tick()/1000.0
 
 			#updating player data and sending to server
-			self.player.update(dt)
+			self.player.update(dt, self.level_map.walls)
 			self.sock.send(pickle.dumps((self.player.pos_x, self.player.pos_y, self.c)))
 
 			#get all player positions from server
@@ -87,14 +105,7 @@ class Game():
 			self.handle_client(playerdata)
 			self.clients.update(playerdata, dt)
 
-			#clearing the screen and drawing all entities
-			self.screen.fill((255,255,255))
-			self.player.draw(self.screen)
-
-			for i in self.clients.sprites():
-				i.draw(self.screen)
-
-			pg.display.flip()
+			self.draw()
 
 	def quit(self):
 		print("Exiting")
