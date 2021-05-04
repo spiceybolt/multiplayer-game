@@ -2,29 +2,16 @@ import pygame as pg
 
 class Map():
 	def __init__(self, file_url):
+		self.level_data = []
 		with open(file_url, 'r') as f:
-			self.level = f.read().split('\n')
+			for line in f:
+				self.level_data.append(line.strip())
 		self.rect_size = 64
-		self.wall_image = pg.image.load("./res/Wall.png")
-
-		self.walls = pg.sprite.Group()
-
-		for row in range(len(self.level)):
-			for column in range(len(self.level[row])):
-				if self.level[row][column] == '#':
-					self.walls.add(Wall(column*self.rect_size, row*self.rect_size, self.wall_image))
+		self.map_width = len(self.level_data[0])
+		self.map_height = len(self.level_data)
 
 
-	def draw(self, surface):
-		self.walls.draw(surface)	
 
-class Wall(pg.sprite.Sprite):
-	def __init__(self, x ,y , image):
-		pg.sprite.Sprite.__init__(self)
-		self.image = image
-		self.rect = self.image.get_rect()
-		self.rect.x = x
-		self.rect.y = y
 
 
 

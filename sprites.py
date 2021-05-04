@@ -3,10 +3,13 @@ import pygame as pg
 
 
 class Client(pg.sprite.Sprite):
-	def __init__(self, color_name, color, image_list):
-		pg.sprite.Sprite.__init__(self)
+	def __init__(self, game, color_name, color):
 
-		self.images = image_list
+		self.game = game
+		self.images = self.game.person_images
+		self.groups = self.game.all_sprites, self.game.clients
+
+		pg.sprite.Sprite.__init__(self, self.groups)
 
 		self.color_name = color_name
 		self.color = pg.Color(*color)
@@ -59,10 +62,12 @@ class Client(pg.sprite.Sprite):
 
 
 class Player(pg.sprite.Sprite):
-	def __init__(self, bounds,color_name, color, image_list):
-		# super(Player, self).__init__()
-		pg.sprite.Sprite.__init__(self)
-		self.images = image_list
+	def __init__(self, game, color_name, color):
+		self.game = game
+		self.images = self.game.person_images
+		self.groups = self.game.all_sprites
+
+		pg.sprite.Sprite.__init__(self, self.groups)
 
 		# img = pg.image.load("res/player.png")
 		self.color = pg.Color(*color)
@@ -80,7 +85,7 @@ class Player(pg.sprite.Sprite):
 		self.frame = 0
 
 		#player wont go past this rectangle bounds
-		self.bounds = bounds
+		self.bounds = self.game.size
 
 
 	def set_velocity_x(self,x:int):
@@ -164,7 +169,17 @@ class Player(pg.sprite.Sprite):
 											  (self.rect.x + 3*self.rect.w/4, self.rect.y - self.rect.h/4)])
 
 
+class Wall(pg.sprite.Sprite):
+	def __init__(self, game,  x ,y):
+		self.image = pg.image.load("./res/Wall.png")
+		self.rect = self.image.get_rect()
+		self.game = game
 
+		self.groups = self.game.all_sprites, self.game.walls
+		pg.sprite.Sprite.__init__(self, self.groups)
+
+		self.rect.x = x
+		self.rect.y = y
 
 
 
