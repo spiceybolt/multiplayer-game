@@ -38,10 +38,12 @@ class Game():
 		self.clients = pg.sprite.Group()
 		self.walls = pg.sprite.Group()
 
-		self.player = sprites.Player(self, self.c, self.colours[self.c])
 		self.level_map = tile_map.Map("res/levels/level1.txt")
+		self.camera = tile_map.Camera(self.level_map, self.size[0], self.size[1])
 		self.init_map()
 		self.clock = pg.time.Clock()
+
+		self.player = sprites.Player(self, self.c, self.colours[self.c])
 
 	def init_map(self):
 		for row in range(self.level_map.map_height):
@@ -90,12 +92,18 @@ class Game():
 		#clearing the screen and drawing all entities
 		self.screen.fill((112,128,144))
 
-		self.walls.draw(self.screen)
+		pl_new = self.camera.move_rect(self.player)
+		pg.draw.polygon(self.screen, self.player.color, [
+								(pl_new.x + pl_new.w/2,pl_new.y - 5), 
+								(pl_new.x + pl_new.w/4, pl_new.y - pl_new.h/4), 
+								(pl_new.x + 3*pl_new.w/4, pl_new.y - pl_new.h/4)])
+		self.screen.blit(self.player.images[self.player.frame],pl_new)
 
-		self.player.draw(self.screen)
+		for wall in self.walls.sprites():
+			self.screen.blit(wall.image, self.camera.move_rect(wall))
 
 		for i in self.clients.sprites():
-			i.draw(self.screen)
+			self.screen.blit(i.images[i.frame], self.camera.move_rect(i))
 
 		pg.display.flip()
 	
@@ -117,6 +125,9 @@ class Game():
 			self.handle_client(playerdata)
 			self.clients.update(playerdata, dt)
 
+			self.camera.update(self.player)
+			# for sprite in self.all_sprites.sprites():
+				# sprite.rect = self.camera.move_rect(sprite)
 			self.draw()
 
 	def quit(self):

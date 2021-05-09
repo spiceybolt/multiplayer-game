@@ -85,7 +85,8 @@ class Player(pg.sprite.Sprite):
 		self.frame = 0
 
 		#player wont go past this rectangle bounds
-		self.bounds = self.game.size
+		lvl = self.game.level_map
+		self.bounds = (lvl.map_width*lvl.rect_size, lvl.map_height*lvl.rect_size)
 
 
 	def set_velocity_x(self,x:int):
